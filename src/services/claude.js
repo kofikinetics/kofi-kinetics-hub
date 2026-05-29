@@ -52,7 +52,7 @@ You always return structured JSON arrays. Never add markdown code fences or any 
     ? `The creator's best performing content includes: ${topPosts.map(p => p.caption || p.title || '(no caption)').slice(0, 5).join(' | ')}`
     : ''
 
-  const user = `Generate 8 content ideas for ${handle} (${niche}) targeting ${audience} on ${platform}.
+  const user = `Generate 6 content ideas for ${handle} (${niche}) targeting ${audience} on ${platform}.
 ${topPostSummary}
 Category filter: ${category || 'all'}.
 
@@ -61,18 +61,38 @@ Return a JSON array of exactly 6 objects. Each object must have:
 - "hook": opening line to grab attention (max 15 words)
 - "format": one of "Reel/TikTok", "Carousel", "Story", "Tutorial", "Talking Head", "Transformation"
 - "script": 3-4 sentence outline of what to say/show
-- "fullScript": a complete, ready-to-film word-for-word script. Structure it as an object with:
-    - "opening": the exact first 5-10 words to say on camera (the hook spoken out loud)
-    - "body": array of 3-5 strings, each being a spoken section or scene direction (e.g. "Cut to: show your form from the side" or "Say: 'Most guys make this mistake...'")
-    - "closing": the exact closing line with the CTA spoken out loud
-    - "onScreenText": array of 2-4 short text overlays to flash on screen during the video
-    - "visualDirections": 2-3 strings describing camera angles, transitions or b-roll shots
-    - "estimatedDuration": estimated video length e.g. "30-45 seconds"
 - "caption": ready-to-post caption with emojis and CTA (max 80 words)
 - "hashtags": array of 8 relevant hashtags (strings starting with #)
 - "cta": specific call-to-action that drives DMs or link clicks
 - "whyItConverts": 1 sentence explaining why this will turn followers into clients
 - "category": one of "workout", "transformation", "nutrition", "motivation", "behind-scenes", "client-results"
+
+Return only raw JSON, nothing else.`
+
+  const raw = await callGroq(apiKey, system, user)
+  return JSON.parse(raw)
+}
+
+export async function generateFullScript(apiKey, { title, hook, format, script, niche, audience }) {
+  const system = `You are an expert fitness content creator and scriptwriter for Instagram Reels and TikTok.
+You write punchy, engaging, word-for-word scripts that feel natural on camera.
+Return structured JSON only. Never add markdown code fences or text outside the JSON.`
+
+  const user = `Write a complete ready-to-film script for this fitness content idea:
+Title: ${title}
+Hook: ${hook}
+Format: ${format}
+Outline: ${script}
+Niche: ${niche}
+Audience: ${audience}
+
+Return a single JSON object with these exact keys:
+- "opening": exact first words to say on camera (the spoken hook, 10-15 words)
+- "body": array of 4-6 strings — each is either a spoken line (prefix with "Say: ") or a scene direction (prefix with "Show: ")
+- "closing": exact closing words with CTA spoken out loud (10-20 words)
+- "onScreenText": array of 3-4 short bold text overlays to flash on screen
+- "visualDirections": array of 3 camera/shot directions (e.g. "Wide shot of you mid-workout", "Quick cut to before/after")
+- "estimatedDuration": e.g. "30-45 seconds"
 
 Return only raw JSON, nothing else.`
 

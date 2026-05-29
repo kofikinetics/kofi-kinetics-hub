@@ -6,7 +6,7 @@ import {
   Play, MessageSquare, Clock
 } from 'lucide-react'
 import { useSettings } from '../hooks/useSettings'
-import { generateContentIdeas } from '../services/claude'
+import { generateContentIdeas, generateFullScript } from '../services/claude'
 import clsx from 'clsx'
 
 const CATEGORIES = [
@@ -187,9 +187,37 @@ function FullScript({ script }) {
   )
 }
 
-function IdeaCard({ idea, onCopy, onSave, saved }) {
+function IdeaCard({ idea, onCopy, onSave, saved, apiKey, niche, audience }) {
   const [open, setOpen] = useState(false)
+  const [fullScript, setFullScript] = useState(idea.fullScript || null)
+  const [scriptLoading, setScriptLoading] = useState(false)
+  const [scriptError, setScriptError] = useState(null)
   const Icon = FORMAT_ICONS[idea.format] || Video
+
+  const handleToggle = async () => {
+    const opening = !open
+    setOpen(opening)
+    // Fetch script the first time the panel opens
+    if (opening && !fullScript && apiKey) {
+      setScriptLoading(true)
+      setScriptError(null)
+      try {
+        const result = await generateFullScript(apiKey, {
+          title: idea.title,
+          hook: idea.hook,
+          format: idea.format,
+          script: idea.script,
+          niche,
+          audience,
+        })
+        setFullScript(result)
+      } catch (e) {
+        setScriptError('Could not load script. Try again.')
+      } finally {
+        setScriptLoading(false)
+      }
+    }
+  }
 
   return (
     <div className="card-hover space-y-4">
@@ -214,8 +242,20 @@ function IdeaCard({ idea, onCopy, onSave, saved }) {
 
       {open && (
         <div className="space-y-3 animate-slide-up">
-          {/* Full Script — shown first and prominently */}
-          {idea.fullScript && <FullScript script={idea.fullScript} />}
+          {/* Full Script — loaded on demand */}
+          {scriptLoading && (
+            <div className="flex items-center gap-2 p-4 bg-dark-700 rounded-xl border border-white/5">
+              <RefreshCw size={14} className="animate-spin text-brand-400" />
+              <p className="text-xs text-gray-400">Writing your full script…</p>
+            </div>
+          )}
+          {scriptError && (
+            <div className="flex items-center gap-2 p-3 bg-red-500/5 border border-red-500/20 rounded-xl">
+              <AlertCircle size={13} className="text-red-400" />
+              <p className="text-xs text-red-400">{scriptError}</p>
+            </div>
+          )}
+          {fullScript && !scriptLoading && <FullScript script={fullScript} />}
 
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">CTA</p>
@@ -239,7 +279,7 @@ function IdeaCard({ idea, onCopy, onSave, saved }) {
 
       <div className="flex items-center gap-2 pt-1">
         <button
-          onClick={() => setOpen(v => !v)}
+          onClick={handleToggle}
           className="btn-ghost text-xs flex-1 justify-center"
         >
           {open ? 'Show less' : 'Full details'} <ChevronRight size={13} className={clsx('transition-transform', open && 'rotate-90')} />
@@ -405,6 +445,9 @@ export default function ContentIdeas() {
               onCopy={handleCopy}
               onSave={handleSave}
               saved={saved.has(idea.title)}
+              apiKey={settings.groqApiKey}
+              niche={settings.niche}
+              audience={settings.audience}
             />
           ))}
         </div>
