@@ -22,7 +22,7 @@ async function callGroq(apiKey, systemPrompt, userPrompt) {
     },
     body: JSON.stringify({
       model: MODEL,
-      max_tokens: 2048,
+      max_tokens: 7000,
       temperature: 0.7,
       messages: [
         { role: 'system', content: systemPrompt },
@@ -56,7 +56,7 @@ You always return structured JSON arrays. Never add markdown code fences or any 
 ${topPostSummary}
 Category filter: ${category || 'all'}.
 
-Return a JSON array of exactly 8 objects. Each object must have:
+Return a JSON array of exactly 6 objects. Each object must have:
 - "title": short punchy title (max 8 words)
 - "hook": opening line to grab attention (max 15 words)
 - "format": one of "Reel/TikTok", "Carousel", "Story", "Tutorial", "Talking Head", "Transformation"
