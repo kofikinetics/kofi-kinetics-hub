@@ -61,6 +61,13 @@ Return a JSON array of exactly 8 objects. Each object must have:
 - "hook": opening line to grab attention (max 15 words)
 - "format": one of "Reel/TikTok", "Carousel", "Story", "Tutorial", "Talking Head", "Transformation"
 - "script": 3-4 sentence outline of what to say/show
+- "fullScript": a complete, ready-to-film word-for-word script. Structure it as an object with:
+    - "opening": the exact first 5-10 words to say on camera (the hook spoken out loud)
+    - "body": array of 3-5 strings, each being a spoken section or scene direction (e.g. "Cut to: show your form from the side" or "Say: 'Most guys make this mistake...'")
+    - "closing": the exact closing line with the CTA spoken out loud
+    - "onScreenText": array of 2-4 short text overlays to flash on screen during the video
+    - "visualDirections": 2-3 strings describing camera angles, transitions or b-roll shots
+    - "estimatedDuration": estimated video length e.g. "30-45 seconds"
 - "caption": ready-to-post caption with emojis and CTA (max 80 words)
 - "hashtags": array of 8 relevant hashtags (strings starting with #)
 - "cta": specific call-to-action that drives DMs or link clicks

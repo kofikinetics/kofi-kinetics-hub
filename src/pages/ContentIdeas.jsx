@@ -1,8 +1,9 @@
 import { useState } from 'react'
 import {
-  Lightbulb, Sparkles, Copy, Bookmark, Filter,
+  Lightbulb, Sparkles, Copy, Bookmark,
   ChevronRight, Video, Image, Layout, Mic, Repeat2,
-  AlertCircle, CheckCircle, RefreshCw
+  AlertCircle, CheckCircle, RefreshCw, Film, Monitor,
+  Play, MessageSquare, Clock
 } from 'lucide-react'
 import { useSettings } from '../hooks/useSettings'
 import { generateContentIdeas } from '../services/claude'
@@ -66,6 +67,126 @@ const SEED_IDEAS = [
   },
 ]
 
+function FullScript({ script }) {
+  if (!script) return null
+  const [copied, setCopied] = useState(false)
+
+  const fullText = [
+    `🎬 OPENING:\n"${script.opening}"`,
+    `\n📹 BODY:\n${script.body?.map((s, i) => `${i + 1}. ${s}`).join('\n')}`,
+    `\n🎯 CLOSING:\n"${script.closing}"`,
+    script.onScreenText?.length ? `\n📝 ON-SCREEN TEXT:\n${script.onScreenText.map(t => `• ${t}`).join('\n')}` : '',
+    script.visualDirections?.length ? `\n🎥 VISUALS:\n${script.visualDirections.map(v => `• ${v}`).join('\n')}` : '',
+  ].filter(Boolean).join('')
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(fullText)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="space-y-3 border-t border-white/5 pt-3">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Film size={13} className="text-brand-400" />
+          <p className="text-xs font-bold text-white uppercase tracking-wider">Full Script</p>
+          {script.estimatedDuration && (
+            <span className="flex items-center gap-1 text-xs text-gray-500">
+              <Clock size={11} /> {script.estimatedDuration}
+            </span>
+          )}
+        </div>
+        <button
+          onClick={handleCopy}
+          className="flex items-center gap-1 text-xs text-brand-400 hover:text-brand-300 transition font-medium"
+        >
+          {copied ? <><CheckCircle size={11} /> Copied!</> : <><Copy size={11} /> Copy script</>}
+        </button>
+      </div>
+
+      {/* Opening */}
+      <div className="rounded-xl overflow-hidden border border-white/5">
+        <div className="flex items-center gap-2 px-3 py-1.5 bg-brand-500/20 border-b border-brand-500/20">
+          <Play size={11} className="text-brand-400" />
+          <span className="text-xs font-semibold text-brand-300 uppercase tracking-wider">Opening Hook</span>
+        </div>
+        <div className="p-3 bg-dark-700">
+          <p className="text-sm text-white font-medium leading-relaxed">"{script.opening}"</p>
+        </div>
+      </div>
+
+      {/* Body */}
+      {script.body?.length > 0 && (
+        <div className="rounded-xl overflow-hidden border border-white/5">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-blue-500/15 border-b border-blue-500/20">
+            <MessageSquare size={11} className="text-blue-400" />
+            <span className="text-xs font-semibold text-blue-300 uppercase tracking-wider">Main Content</span>
+          </div>
+          <div className="divide-y divide-white/5">
+            {script.body.map((line, i) => (
+              <div key={i} className="flex gap-3 p-3 bg-dark-700">
+                <span className="w-5 h-5 rounded-full bg-dark-600 border border-white/10 flex items-center justify-center text-xs font-bold text-gray-400 shrink-0 mt-0.5">
+                  {i + 1}
+                </span>
+                <p className="text-sm text-gray-200 leading-relaxed">{line}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* Closing */}
+      {script.closing && (
+        <div className="rounded-xl overflow-hidden border border-white/5">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/15 border-b border-emerald-500/20">
+            <Play size={11} className="text-emerald-400 rotate-180" />
+            <span className="text-xs font-semibold text-emerald-300 uppercase tracking-wider">Closing CTA</span>
+          </div>
+          <div className="p-3 bg-dark-700">
+            <p className="text-sm text-white font-medium leading-relaxed">"{script.closing}"</p>
+          </div>
+        </div>
+      )}
+
+      {/* On-screen text + visuals in a 2-col grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        {script.onScreenText?.length > 0 && (
+          <div className="rounded-xl overflow-hidden border border-white/5">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-purple-500/15 border-b border-purple-500/20">
+              <Monitor size={11} className="text-purple-400" />
+              <span className="text-xs font-semibold text-purple-300 uppercase tracking-wider">On-Screen Text</span>
+            </div>
+            <div className="p-3 bg-dark-700 space-y-1.5">
+              {script.onScreenText.map((t, i) => (
+                <p key={i} className="text-xs text-gray-300 flex items-start gap-1.5">
+                  <span className="text-purple-400 shrink-0">▶</span> {t}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {script.visualDirections?.length > 0 && (
+          <div className="rounded-xl overflow-hidden border border-white/5">
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-amber-500/15 border-b border-amber-500/20">
+              <Film size={11} className="text-amber-400" />
+              <span className="text-xs font-semibold text-amber-300 uppercase tracking-wider">Camera / Visuals</span>
+            </div>
+            <div className="p-3 bg-dark-700 space-y-1.5">
+              {script.visualDirections.map((v, i) => (
+                <p key={i} className="text-xs text-gray-300 flex items-start gap-1.5">
+                  <span className="text-amber-400 shrink-0">🎥</span> {v}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 function IdeaCard({ idea, onCopy, onSave, saved }) {
   const [open, setOpen] = useState(false)
   const Icon = FORMAT_ICONS[idea.format] || Video
@@ -93,6 +214,9 @@ function IdeaCard({ idea, onCopy, onSave, saved }) {
 
       {open && (
         <div className="space-y-3 animate-slide-up">
+          {/* Full Script — shown first and prominently */}
+          {idea.fullScript && <FullScript script={idea.fullScript} />}
+
           <div>
             <p className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-1.5">CTA</p>
             <p className="text-sm text-brand-400 font-medium">{idea.cta}</p>
