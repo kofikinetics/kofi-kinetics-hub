@@ -11,7 +11,7 @@
  */
 
 const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions'
-const MODEL = 'llama3-70b-8192'
+const MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct'
 
 async function callGroq(apiKey, systemPrompt, userPrompt) {
   const res = await fetch(GROQ_API, {
